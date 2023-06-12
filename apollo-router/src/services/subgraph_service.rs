@@ -276,6 +276,8 @@ async fn call_http(
             }
         })?;
 
+    let compressed_size = compressed_body.len().to_string().to_owned();
+
     let mut request = http::request::Request::from_parts(parts, compressed_body.into());
     let app_json: HeaderValue = HeaderValue::from_static(APPLICATION_JSON.essence_str());
     let app_graphql_json: HeaderValue =
@@ -286,6 +288,12 @@ async fn call_http(
     request
         .headers_mut()
         .insert(ACCEPT_ENCODING, ACCEPTED_ENCODINGS);
+
+    let content_size = HeaderValue::from_str(&compressed_size);
+    request.headers_mut().insert(
+      header::CONTENT_LENGTH,
+      content_size?,
+    );
 
     let schema_uri = request.uri();
     let host = schema_uri.host().unwrap_or_default();
